@@ -7,7 +7,7 @@ Voice interview analytics dashboard with Retell AI integration.
 - **Next.js 16** (App Router)
 - **Drizzle ORM** + Supabase Postgres
 - **shadcn/ui** + Tailwind CSS
-- **Zod** validation
+- **Zod** validation - [Documentation](https://zod.dev/?id=objects)
 - **Retell AI** SDK
 
 ## Setup
@@ -38,12 +38,22 @@ npm run db:push       # Push schema to database
 npm run db:studio     # Open Drizzle Studio
 ```
 
+### Drizzle Documentation References
+
+- [Drizzle + Supabase Setup](https://orm.drizzle.team/docs/get-started/supabase-new) - Getting started with Drizzle ORM and Supabase Postgres
+
 ## Retell Webhook
 
 Configure in Retell dashboard:
 ```
 POST https://humantruths-interview.vercel.app/api/webhooks/retell
 ```
+
+### Retell Documentation References
+
+- [Webhook Overview](https://docs.retellai.com/features/webhook-overview) - Understanding webhook events and payload structure
+- [Secure Webhook](https://docs.retellai.com/features/secure-webhook) - Signature validation for webhook security
+- [Register Webhook](https://docs.retellai.com/features/register-webhook) - How to configure webhooks in Retell dashboard
 
 ## Features
 
