@@ -85,6 +85,16 @@ export async function POST(request: NextRequest) {
       ? 'completed'
       : call.disconnection_reason ?? 'ended'
 
+    // Extract dynamic variables from Retell conversation flow
+    // Always include is_woman as boolean (true if "true", false otherwise)
+    const rawVariables = call.collected_dynamic_variables
+    const extractedVariables = rawVariables
+      ? {
+          ...rawVariables,
+          is_woman: rawVariables.is_woman === 'true',
+        }
+      : null
+
     if (existing.length > 0) {
       await db
         .update(interviews)
@@ -92,6 +102,7 @@ export async function POST(request: NextRequest) {
           transcript,
           duration,
           completionStatus,
+          extractedVariables,
         })
         .where(eq(interviews.callId, call.call_id))
     } else {
@@ -106,6 +117,7 @@ export async function POST(request: NextRequest) {
         transcript,
         duration,
         completionStatus,
+        extractedVariables,
       })
     }
 

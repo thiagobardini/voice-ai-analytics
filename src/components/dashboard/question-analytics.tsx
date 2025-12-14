@@ -1,110 +1,137 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
-import { ScrollArea } from '@/components/ui/scroll-area'
-import type { TranscriptMessage } from '@/lib/types'
-
-interface QuestionData {
-  question: string
-  responses: { content: string; interviewId: number }[]
-}
+import type { ExtractedVariables } from '@/lib/types'
 
 interface QuestionAnalyticsProps {
-  transcripts: (TranscriptMessage[] | null)[]
+  extractedVariables: (ExtractedVariables | null)[]
 }
 
-// Extract questions from transcripts (agent messages that contain ?)
-function extractQuestionsFromTranscripts(
-  transcripts: (TranscriptMessage[] | null)[]
-): QuestionData[] {
-  const questionMap = new Map<string, QuestionData>()
+// Process extracted variables for analytics
+function processExtractedVariables(variables: (ExtractedVariables | null)[]) {
+  let womanYes = 0
+  let womanNo = 0
+  const foodCounts = new Map<string, { count: number; reasons: string[] }>()
 
-  transcripts.forEach((transcript, interviewIndex) => {
-    if (!transcript) return
+  variables.forEach((vars) => {
+    if (!vars) return
 
-    transcript.forEach((msg, msgIndex) => {
-      // Find agent questions (messages containing ?)
-      if (msg.role === 'agent' && msg.content.includes('?')) {
-        const question = msg.content.trim()
-
-        // Get the next user response if exists
-        const nextMsg = transcript[msgIndex + 1]
-        const response = nextMsg?.role === 'user' ? nextMsg.content : null
-
-        if (!questionMap.has(question)) {
-          questionMap.set(question, { question, responses: [] })
+    if (vars.is_woman === true) {
+      womanYes++
+      if (vars.favorite_food) {
+        const food = vars.favorite_food.toLowerCase().trim()
+        const existing = foodCounts.get(food) || { count: 0, reasons: [] }
+        existing.count++
+        if (vars.food_reason) {
+          existing.reasons.push(vars.food_reason)
         }
-
-        if (response) {
-          questionMap.get(question)!.responses.push({
-            content: response,
-            interviewId: interviewIndex,
-          })
-        }
+        foodCounts.set(food, existing)
       }
-    })
+    } else if (vars.is_woman === false) {
+      womanNo++
+    }
   })
 
-  return Array.from(questionMap.values())
-    .filter(q => q.responses.length > 0)
-    .sort((a, b) => b.responses.length - a.responses.length)
+  // Sort by count descending
+  const sortedFoods = Array.from(foodCounts.entries())
+    .sort((a, b) => b[1].count - a[1].count)
+    .map(([food, data]) => ({ food, ...data }))
+
+  return { womanYes, womanNo, sortedFoods }
 }
 
-export function QuestionAnalytics({ transcripts }: QuestionAnalyticsProps) {
-  const questionAnalytics = extractQuestionsFromTranscripts(transcripts)
+export function QuestionAnalytics({ extractedVariables }: QuestionAnalyticsProps) {
+  const { womanYes, womanNo, sortedFoods } = processExtractedVariables(extractedVariables)
+  const total = womanYes + womanNo
+  const hasData = total > 0
+
+  if (!hasData) {
+    return (
+      <Card className="mb-8">
+        <CardHeader>
+          <CardTitle>Question Analytics</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="text-muted-foreground">No questions analyzed yet.</p>
+        </CardContent>
+      </Card>
+    )
+  }
+
+  const yesPercent = Math.round((womanYes / total) * 100)
+  const noPercent = 100 - yesPercent
 
   return (
-    <Card className="mb-8">
-      <CardHeader>
-        <CardTitle>Question Analytics</CardTitle>
-      </CardHeader>
-      <CardContent>
-        {questionAnalytics.length === 0 ? (
-          <p className="text-muted-foreground">No questions analyzed yet.</p>
-        ) : (
-          <ScrollArea className="h-[400px]">
-            <div className="space-y-6">
-              {questionAnalytics.map((qa, index) => {
-                const avgLength = Math.round(
-                  qa.responses.reduce((sum, r) => sum + r.content.length, 0) / qa.responses.length
-                )
-                const recentResponses = qa.responses.slice(-3)
-
-                return (
-                  <div key={index} className="border-b pb-4 last:border-0">
-                    <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2 mb-3">
-                      <p className="font-medium text-sm">{qa.question}</p>
-                      <div className="flex gap-2 shrink-0">
-                        <Badge variant="secondary">
-                          {qa.responses.length} responses
-                        </Badge>
-                        <Badge variant="outline">
-                          ~{avgLength} chars avg
-                        </Badge>
-                      </div>
-                    </div>
-
-                    <div className="space-y-2">
-                      <p className="text-xs text-muted-foreground uppercase tracking-wide">
-                        Recent Answers
-                      </p>
-                      {recentResponses.map((response, rIndex) => (
-                        <div
-                          key={rIndex}
-                          className="bg-muted rounded-lg px-3 py-2 text-sm"
-                        >
-                          {response.content.length > 150
-                            ? `${response.content.substring(0, 150)}...`
-                            : response.content}
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )
-              })}
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+      {/* Are you a woman? */}
+      <Card>
+        <CardHeader className="pb-2">
+          <CardTitle className="text-base">Are you a woman?</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-center gap-4 mb-4">
+            <div className="flex-1">
+              <div className="h-4 bg-muted rounded-full overflow-hidden flex">
+                {yesPercent > 0 && (
+                  <div
+                    className="h-full bg-emerald-500"
+                    style={{ width: `${yesPercent}%` }}
+                  />
+                )}
+                {noPercent > 0 && (
+                  <div
+                    className="h-full bg-slate-400"
+                    style={{ width: `${noPercent}%` }}
+                  />
+                )}
+              </div>
             </div>
-          </ScrollArea>
-        )}
-      </CardContent>
-    </Card>
+          </div>
+          <div className="flex justify-between text-sm">
+            <div className="flex items-center gap-2">
+              <div className="w-3 h-3 rounded-full bg-emerald-500" />
+              <span>Yes: {womanYes} ({yesPercent}%)</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="w-3 h-3 rounded-full bg-slate-400" />
+              <span>No: {womanNo} ({noPercent}%)</span>
+            </div>
+          </div>
+          <p className="text-xs text-muted-foreground mt-3">
+            Total: {total} responses
+          </p>
+        </CardContent>
+      </Card>
+
+      {/* What's your favorite food and why? */}
+      <Card>
+        <CardHeader className="pb-2">
+          <CardTitle className="text-base">What&apos;s your favorite food and why?</CardTitle>
+        </CardHeader>
+        <CardContent>
+          {sortedFoods.length === 0 ? (
+            <p className="text-sm text-muted-foreground">
+              No responses yet (only asked to women)
+            </p>
+          ) : (
+            <div className="space-y-3">
+              {sortedFoods.map(({ food, count, reasons }) => (
+                <div key={food} className="space-y-1">
+                  <div className="flex items-center justify-between">
+                    <span className="font-medium text-sm capitalize">{food}</span>
+                    <span className="text-xs text-muted-foreground">
+                      {count}x
+                    </span>
+                  </div>
+                  {reasons.length > 0 && (
+                    <p className="text-xs text-muted-foreground pl-2 border-l-2 border-muted">
+                      {reasons[0]}
+                    </p>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+    </div>
   )
 }

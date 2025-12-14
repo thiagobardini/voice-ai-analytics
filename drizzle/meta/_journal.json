@@ -8,6 +8,13 @@
       "when": 1765659180701,
       "tag": "0000_steady_valeria_richards",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1765734056973,
+      "tag": "0001_sticky_virginia_dare",
+      "breakpoints": true
     }
   ]
 }
