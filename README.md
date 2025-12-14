@@ -180,6 +180,27 @@ After a webhook is received, check logs in:
 3. **Zod nested schema** - Matches Retell's actual payload structure
 4. **Check then insert/update** - Check if exists first, then insert or update
 5. **Server Components** - Dashboard and detail pages fetch data directly
+6. **Reusable components** - Small, focused components with barrel exports
+
+---
+
+## Trade-offs & Assumptions
+
+### Question Analytics Limitation
+The question-by-question analytics uses **exact string matching** to group questions. Since AI agents speak dynamically, the same logical question may have slightly different wording across interviews. This means some questions won't group together perfectly.
+
+**Production solution:** Use an AI classification service (via n8n webhook or similar) to normalize questions into canonical categories.
+
+### Sequential Participant IDs
+Participant IDs are generated as `participant-1`, `participant-2`, etc. using `COUNT(*)`. This has a theoretical race condition with concurrent requests, but is acceptable for an MVP.
+
+**Production solution:** Use database sequences or UUID-based IDs.
+
+### Real vs Mock Signature Validation
+The project spec suggested "mock validation," but I implemented **real signature validation** using the Retell SDK (`Retell.verify()`). This is more secure and production-ready.
+
+### Next.js 16
+Used Next.js 16 (latest) instead of 14+ as specified. The App Router API is the same, with improved performance.
 
 ---
 
