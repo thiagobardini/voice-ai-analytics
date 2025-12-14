@@ -85,7 +85,24 @@ View data directly in:
 
 ---
 
-## Step 3: Database Schema
+## Step 3: Retell Agent Configuration
+
+Create a Retell AI agent using **Conversation Flow** (not Single Prompt mode):
+
+1. Go to [Retell Dashboard](https://dashboard.retellai.com/) → Agents → Create Agent
+2. Select **Conversation Flow** as the agent type
+3. Configure the interview flow with blocks:
+   - **Greeting block** - Welcome message
+   - **Question blocks** - Each interview question
+   - **Goodbye block** - Thank you message
+4. Enable **Extract Dynamic Variables** on each question block to capture responses
+5. Register your webhook URL in Agent Settings
+
+See [`docs/retell/retell-integration.md`](./docs/retell/retell-integration.md) for detailed configuration.
+
+---
+
+## Step 4: Database Schema
 
 `src/db/schema.ts`
 
@@ -107,7 +124,7 @@ npm run db:studio     # Open Drizzle Studio
 
 ---
 
-## Step 4: Zod Validation
+## Step 5: Zod Validation
 
 `src/lib/validations/retell.ts`
 
@@ -118,7 +135,7 @@ The Zod schema matches Retell's nested structure:
 
 ---
 
-## Step 5: Webhook Endpoint
+## Step 6: Webhook Endpoint
 
 `src/app/api/webhooks/retell/route.ts`
 
@@ -137,7 +154,7 @@ The webhook endpoint does 4 things:
 
 ---
 
-## Step 6: Dashboard
+## Step 7: Dashboard
 
 `src/app/dashboard/page.tsx`
 
@@ -150,7 +167,7 @@ The dashboard shows:
 
 ---
 
-## Step 7: Interview Detail
+## Step 8: Interview Detail
 
 `src/app/interview/[callId]/page.tsx`
 
@@ -160,7 +177,7 @@ The detail page shows:
 
 ---
 
-## Step 8: Development
+## Step 9: Development
 
 ```bash
 npm run dev
