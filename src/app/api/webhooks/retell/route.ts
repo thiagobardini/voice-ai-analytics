@@ -77,9 +77,14 @@ export async function POST(request: NextRequest) {
         })
         .where(eq(interviews.callId, call.call_id))
     } else {
+      // Generate sequential participant ID if not provided
+      // In production, this would come from user authentication
+      const count = await db.select().from(interviews)
+      const generatedId = `participant-${count.length + 1}`
+
       await db.insert(interviews).values({
         callId: call.call_id,
-        participantId: call.metadata?.participant_id ?? null,
+        participantId: call.metadata?.participant_id ?? generatedId,
         transcript,
         duration,
         completionStatus,
