@@ -1,11 +1,17 @@
+import { desc } from 'drizzle-orm'
 import { db } from '@/db'
 import { interviews } from '@/db/schema'
-import { MetricCard, QuestionAnalytics, InterviewList } from '@/components/dashboard'
+import {
+  MetricCard,
+  QuestionAnalytics,
+  InterviewList,
+  RefreshButton,
+} from '@/components/dashboard'
 
 export const dynamic = 'force-dynamic'
 
 export default async function DashboardPage() {
-  const allInterviews = await db.select().from(interviews)
+  const allInterviews = await db.select().from(interviews).orderBy(desc(interviews.createdAt))
 
   const totalInterviews = allInterviews.length
   const avgDuration = totalInterviews > 0
@@ -19,7 +25,10 @@ export default async function DashboardPage() {
   return (
     <div className="min-h-screen bg-background">
       <div className="container max-w-6xl mx-auto px-4 py-8">
-        <h1 className="text-2xl font-bold mb-6">Interview Dashboard</h1>
+        <div className="flex items-center justify-between mb-6">
+          <h1 className="text-2xl font-bold">Interview Dashboard</h1>
+          <RefreshButton />
+        </div>
 
         {/* Overview Metrics */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">

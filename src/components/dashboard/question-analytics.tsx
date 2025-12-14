@@ -1,4 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { ScrollArea } from '@/components/ui/scroll-area'
 import type { ExtractedVariables } from '@/lib/types'
 
 interface QuestionAnalyticsProps {
@@ -112,23 +113,25 @@ export function QuestionAnalytics({ extractedVariables }: QuestionAnalyticsProps
               No responses yet (only asked to women)
             </p>
           ) : (
-            <div className="space-y-3">
-              {sortedFoods.map(({ food, count, reasons }) => (
-                <div key={food} className="space-y-1">
-                  <div className="flex items-center justify-between">
-                    <span className="font-medium text-sm capitalize">{food}</span>
-                    <span className="text-xs text-muted-foreground">
-                      {count}x
-                    </span>
+            <ScrollArea className="h-[150px]">
+              <div className="space-y-3 pr-4">
+                {sortedFoods.map(({ food, count, reasons }) => (
+                  <div key={food} className="space-y-1">
+                    <div className="flex items-center justify-between">
+                      <span className="font-medium text-sm capitalize">{food}</span>
+                      <span className="text-xs text-muted-foreground">
+                        {count}x
+                      </span>
+                    </div>
+                    {reasons.length > 0 && (
+                      <p className="text-xs text-muted-foreground pl-2 border-l-2 border-muted">
+                        {reasons[0]}
+                      </p>
+                    )}
                   </div>
-                  {reasons.length > 0 && (
-                    <p className="text-xs text-muted-foreground pl-2 border-l-2 border-muted">
-                      {reasons[0]}
-                    </p>
-                  )}
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            </ScrollArea>
           )}
         </CardContent>
       </Card>
