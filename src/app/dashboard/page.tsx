@@ -29,7 +29,7 @@ export default async function DashboardPage() {
         </div>
 
         {/* Question Analytics */}
-        <QuestionAnalytics transcripts={allInterviews.map(i => i.transcript)} />
+        <QuestionAnalytics extractedVariables={allInterviews.map(i => i.extractedVariables)} />
 
         {/* Recent Interviews */}
         <InterviewList interviews={allInterviews} />

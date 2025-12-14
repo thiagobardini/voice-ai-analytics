@@ -1,4 +1,8 @@
+'use client'
+
 import Link from 'next/link'
+import { Copy, Check } from 'lucide-react'
+import { useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -15,6 +19,32 @@ function getStatusVariant(status: string) {
     case 'pending': return 'secondary'
     default: return 'outline'
   }
+}
+
+function CopyButton({ text }: { text: string }) {
+  const [copied, setCopied] = useState(false)
+
+  const handleCopy = async (e: React.MouseEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    await navigator.clipboard.writeText(text)
+    setCopied(true)
+    setTimeout(() => setCopied(false), 2000)
+  }
+
+  return (
+    <button
+      onClick={handleCopy}
+      className="p-1 hover:bg-muted rounded transition-colors"
+      title="Copy Call ID"
+    >
+      {copied ? (
+        <Check className="h-3 w-3 text-emerald-500" />
+      ) : (
+        <Copy className="h-3 w-3 text-muted-foreground" />
+      )}
+    </button>
+  )
 }
 
 export function InterviewList({ interviews }: InterviewListProps) {
@@ -39,7 +69,10 @@ export function InterviewList({ interviews }: InterviewListProps) {
                     <CardContent className="py-4">
                       <div className="flex items-center justify-between">
                         <div className="space-y-1">
-                          <p className="font-mono text-sm">{interview.callId}</p>
+                          <div className="flex items-center gap-2">
+                            <p className="font-mono text-sm">{interview.callId}</p>
+                            <CopyButton text={interview.callId} />
+                          </div>
                           <p className="text-sm text-muted-foreground">
                             {interview.participantId || 'No participant ID'}
                           </p>

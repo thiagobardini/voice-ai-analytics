@@ -3,7 +3,7 @@ import { revalidatePath } from 'next/cache'
 import { Retell } from 'retell-sdk'
 import { eq, count } from 'drizzle-orm'
 import { db } from '@/db'
-import { interviews } from '@/db/schema'
+import { interviews, type ExtractedVariables } from '@/db/schema'
 import { RetellWebhookSchema } from '@/lib/validations/retell'
 
 /**
@@ -85,6 +85,10 @@ export async function POST(request: NextRequest) {
       ? 'completed'
       : call.disconnection_reason ?? 'ended'
 
+    // Extract dynamic variables from Retell conversation flow
+    // Zod transforms is_woman from "true" to boolean, cast to match DB type
+    const extractedVariables = (call.collected_dynamic_variables as ExtractedVariables) ?? null
+
     if (existing.length > 0) {
       await db
         .update(interviews)
@@ -92,6 +96,7 @@ export async function POST(request: NextRequest) {
           transcript,
           duration,
           completionStatus,
+          extractedVariables,
         })
         .where(eq(interviews.callId, call.call_id))
     } else {
@@ -106,6 +111,7 @@ export async function POST(request: NextRequest) {
         transcript,
         duration,
         completionStatus,
+        extractedVariables,
       })
     }
 
