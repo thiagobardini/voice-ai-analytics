@@ -1,0 +1,96 @@
+import { NextRequest, NextResponse } from 'next/server'
+import { Retell } from 'retell-sdk'
+import { eq } from 'drizzle-orm'
+import { db } from '@/db'
+import { interviews } from '@/db/schema'
+import { RetellWebhookSchema } from '@/lib/validations/retell'
+
+// 1. Validate signature using Retell SDK
+function validateSignature(request: NextRequest, body: string): boolean {
+  const signature = request.headers.get('x-retell-signature')
+  if (!signature) return false
+
+  const apiKey = process.env.RETELL_API_KEY
+  if (!apiKey) return false
+
+  return Retell.verify(body, apiKey, signature)
+}
+
+export async function POST(request: NextRequest) {
+  try {
+    const body = await request.text()
+    console.log('📥 Webhook received')
+
+    // 1. Validate signature using Retell SDK
+    const isValid = validateSignature(request, body)
+    console.log('🔐 Signature valid:', isValid)
+
+    if (!isValid) {
+      return NextResponse.json({ error: 'Invalid signature' }, { status: 401 })
+    }
+
+    // 2. Parse and validate payload with Zod
+    const json = JSON.parse(body)
+    const result = RetellWebhookSchema.safeParse(json)
+    console.log('📋 Zod validation:', result.success)
+
+    if (!result.success) {
+      return NextResponse.json({ error: 'Invalid payload' }, { status: 400 })
+    }
+
+    const { event, call } = result.data
+
+    // Only process call_ended and call_analyzed events
+    if (event === 'call_started') {
+      return NextResponse.json({ message: 'Received' }, { status: 200 })
+    }
+
+    // 3. Calculate duration from timestamps
+    const duration =
+      call.start_timestamp && call.end_timestamp
+        ? call.end_timestamp - call.start_timestamp
+        : call.duration_ms ?? 0
+
+    // 4. Save to database with Drizzle (check then insert/update)
+    const existing = await db
+      .select()
+      .from(interviews)
+      .where(eq(interviews.callId, call.call_id))
+      .limit(1)
+
+    const transcript = call.transcript_object?.map((msg) => ({
+      role: msg.role,
+      content: msg.content,
+    })) ?? []
+
+    const completionStatus = call.call_analysis?.call_successful
+      ? 'completed'
+      : call.disconnection_reason ?? 'ended'
+
+    if (existing.length > 0) {
+      await db
+        .update(interviews)
+        .set({
+          transcript,
+          duration,
+          completionStatus,
+        })
+        .where(eq(interviews.callId, call.call_id))
+    } else {
+      await db.insert(interviews).values({
+        callId: call.call_id,
+        participantId: call.metadata?.participant_id ?? null,
+        transcript,
+        duration,
+        completionStatus,
+      })
+    }
+
+    console.log(`✅ Interview saved: ${call.call_id}`)
+
+    return NextResponse.json({ message: 'Success' }, { status: 200 })
+  } catch (error) {
+    console.error('Webhook error:', error)
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+  }
+}

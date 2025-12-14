@@ -3,5 +3,5 @@ import postgres from 'postgres'
 import * as schema from './schema'
 
 // Pooled connection for app queries (better performance)
-const client = postgres(process.env.DATABASE_POSTGRES_URL!, { prepare: false })
+const client = postgres(process.env.DATABASE_URL!, { prepare: false })
 export const db = drizzle(client, { schema })
