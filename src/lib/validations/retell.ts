@@ -10,9 +10,9 @@ const TranscriptMessageSchema = z.object({
 })
 
 // Extracted variables from Retell's conversation flow
-// When not a woman, is_woman/favorite_food/food_reason fields are absent
+// Retell sends is_woman as string "true" or "false", we transform to boolean
 const ExtractedVariablesSchema = z.object({
-  is_woman: z.literal('true').transform(() => true).optional(),
+  is_woman: z.enum(['true', 'false']).transform((val) => val === 'true'),
   favorite_food: z.string().optional(),
   food_reason: z.string().optional(),
   previous_node: z.string().optional(),

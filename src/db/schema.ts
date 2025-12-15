@@ -2,7 +2,7 @@ import { pgTable, text, integer, timestamp, json } from 'drizzle-orm/pg-core'
 
 // Type for extracted variables from Retell's conversation flow
 export type ExtractedVariables = {
-  is_woman?: boolean
+  is_woman: boolean
   favorite_food?: string
   food_reason?: string
   previous_node?: string
