@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
-import { ChevronDown, ChevronUp, Github, Video } from 'lucide-react'
+import { ChevronDown, ChevronUp, Github, Video, Briefcase } from 'lucide-react'
 
 export function TopBar() {
   const [isOpen, setIsOpen] = useState(false)
@@ -51,17 +51,30 @@ export function TopBar() {
                 />
               </div>
 
-              {/* GitHub Link */}
-              <div className="flex items-center justify-center gap-1.5">
-                <Github className="h-3.5 w-3.5" />
-                <a
-                  href="https://github.com/thiagobardini/voice-ai-analytics"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-xs text-primary hover:underline"
-                >
-                  View on GitHub
-                </a>
+              {/* Links */}
+              <div className="flex items-center justify-center gap-4">
+                <div className="flex items-center gap-1.5">
+                  <Github className="h-3.5 w-3.5" />
+                  <a
+                    href="https://github.com/thiagobardini/voice-ai-analytics"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-xs text-primary hover:underline"
+                  >
+                    View on GitHub
+                  </a>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <Briefcase className="h-3.5 w-3.5" />
+                  <a
+                    href="https://www.tbardini.com/projects?project=Voice%20Call%20Analytics%20-%202025"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-xs text-primary hover:underline"
+                  >
+                    View on Portfolio
+                  </a>
+                </div>
               </div>
             </div>
           </div>

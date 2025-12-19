@@ -8,6 +8,8 @@ A voice AI webhook receiver with analytics dashboard. Receives webhooks from Ret
 
 > Click the link above to watch the step-by-step demo of how the platform works.
 
+📁 **[View on Portfolio](https://www.tbardini.com/projects?project=Voice%20Call%20Analytics%20-%202025)**
+
 ---
 
 ## Tech Stack
