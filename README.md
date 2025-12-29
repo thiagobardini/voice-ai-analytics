@@ -85,6 +85,28 @@ RETELL_API_KEY="your_retell_api_key"
 View data directly in:
 - Supabase Dashboard → Table Editor → `interviews` table (or your configured table name)
 
+### Supabase Free Tier Auto-Pause Prevention
+
+**Problem:** Supabase Free Tier pauses projects after 7 days of inactivity, causing `Tenant or user not found` errors.
+
+**Solution:** Health check cron job keeps database active.
+
+**How it works:**
+1. **Health check endpoint:** `/api/health` (`src/app/api/health/route.ts`)
+   - Simple `SELECT 1` query to keep DB connection alive
+   - Returns status + timestamp
+2. **Vercel cron job:** Configured in `vercel.json`
+   - Runs every 6 days (`0 0 */6 * *`)
+   - Prevents auto-pause by keeping project active
+
+**Manual recovery (if paused):**
+1. Go to [Supabase Dashboard](https://supabase.com/dashboard)
+2. Click "Restore project" button
+3. Wait 1-2 minutes for database to restart
+4. Redeploy in Vercel (to reconnect)
+
+**Alternative:** Upgrade to Supabase Pro ($25/month) for no auto-pause.
+
 ---
 
 ## Step 3: Retell Agent Configuration
